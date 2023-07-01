@@ -5,6 +5,7 @@ import (
 	"os"
 	"os/exec"
 	"regexp"
+	"strings"
 
 	"github.com/spf13/cobra"
 )
@@ -12,6 +13,22 @@ import (
 var (
 	flagPrefix string
 )
+
+func processArgs(args []string) string {
+	var bld strings.Builder
+	for _, v := range args {
+		if strings.ContainsRune(v, ' ') {
+			bld.WriteRune('"')
+			bld.WriteString(v)
+			bld.WriteRune('"')
+		} else {
+			bld.WriteString(v)
+		}
+		bld.WriteRune(' ')
+	}
+
+	return bld.String()
+}
 
 var execCmd = &cobra.Command{
 	Use:   "exec",
@@ -45,7 +62,9 @@ var execCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		c := exec.Command("sh", append([]string{"-c"}, args...)...)
+		cmdString := processArgs(args)
+
+		c := exec.Command("sh", "-c", cmdString)
 
 		runCmd(c)
 	},
