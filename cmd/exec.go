@@ -4,6 +4,7 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"regexp"
 
 	"github.com/spf13/cobra"
 )
@@ -54,4 +55,23 @@ func init() {
 	rootCmd.AddCommand(execCmd)
 
 	execCmd.PersistentFlags().StringVarP(&flagPrefix, "prefix", "p", "", "Prefix to use")
+	_ = execCmd.RegisterFlagCompletionFunc("prefix", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+
+		var ret []string
+
+		compRx, err := regexp.Compile("^" + toComplete)
+		if err != nil {
+			return nil, 0
+		}
+
+		pfx := getPrefixes()
+		for _, v := range pfx {
+			if compRx.MatchString(v.Name) {
+				ret = append(ret, v.Name)
+			}
+		}
+
+		return ret, 0
+	})
+
 }
